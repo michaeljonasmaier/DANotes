@@ -133,9 +133,15 @@
         </div>
     </div>
     <div>
-        
-        @for (note of noteList; track note) {
-            <app-note [note]="note"></app-note>
-          }
+        @if (this.status == "notes") {
+            @for (note of noteService.normalNotes; track note) {
+                <app-note [note]="note"></app-note>
+              }
+        } @else {
+            @for (note of noteService.trashNotes; track note) {
+                <app-note [note]="note"></app-note>
+              }
+        }
+       
     </div>
 </div>

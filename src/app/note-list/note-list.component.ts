@@ -36,4 +36,16 @@ export class NoteListComponent {
     }
   }
 
+  getList(): Note[]{ 
+    if(this.status == "notes"){
+     if(this.favFilter == "fav"){    
+      return this.noteService.markedNotes;
+      } else { 
+        return this.noteService.normalNotes;
+      }
+    } else {
+      return this.noteService.trashNotes;
+    }
+  }
+
 }

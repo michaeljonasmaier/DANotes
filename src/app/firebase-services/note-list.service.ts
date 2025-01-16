@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Note } from '../interfaces/note.interface';
-import { Firestore, collectionData, collection, doc, onSnapshot, addDoc, updateDoc, deleteDoc } from '@angular/fire/firestore';
+import { query, orderBy, limit, where, Firestore, collectionData, collection, doc, onSnapshot, addDoc, updateDoc, deleteDoc } from '@angular/fire/firestore';
 import { Observable } from 'rxjs';
 import { NoteComponent } from '../note-list/note/note.component';
 @Injectable({
@@ -10,18 +10,22 @@ export class NoteListService {
 
   trashNotes: Note[] = [];
   normalNotes: Note[] = [];
+  markedNotes: Note[] = [];
 
   firestore: Firestore = inject(Firestore);
   unsubTrash;
   unsubNotes;
+  unsubMarked;
 
   constructor() {
     this.unsubNotes = this.subNotesList();
-    this.unsubTrash = this.subTrashList()
+    this.unsubTrash = this.subTrashList();
+    this.unsubMarked = this.subMarkedNotesList();
   }
 
   subNotesList() {
-    return onSnapshot(this.getNotesRef(), (list) => {
+    const q = query(this.getNotesRef(), limit(100)) //where("marked", "==", true)
+    return onSnapshot(q, (list) => {
       this.normalNotes = []
       list.forEach(element => {
         this.normalNotes.push(this.setNoteObject(element.data(), element.id))
@@ -38,9 +42,20 @@ export class NoteListService {
     });
   }
 
+  subMarkedNotesList() {
+    const q = query(this.getNotesRef(), where("marked", "==", true));
+    return onSnapshot(q, (list) => {
+      this.markedNotes = []
+      list.forEach(element => {
+        this.markedNotes.push(this.setNoteObject(element.data(), element.id))
+      });
+    });
+  }
+
   ngOnDestroy() {
     this.unsubNotes();
     this.unsubTrash();
+    this.unsubMarked();
   }
 
   getColIdFromNote(note: Note) {
